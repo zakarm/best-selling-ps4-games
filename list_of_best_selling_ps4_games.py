@@ -12,10 +12,10 @@ Original file is located at
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import matplotlib as plt
-import seaborn as sns
+import matplotlib.pyplot as plt
 import plotly.express as px
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LinearRegression
 
 """# **Load DataSet**"""
 
@@ -33,19 +33,40 @@ df.describe()
 
 """# **Data Preproccesing**"""
 
+df.rename(columns={"Release date[a]": "ReleaseYear"}, inplace=True)
+df.rename(columns={"Copies sold": "CopiesSold"}, inplace=True)
 lst = []
-for i in df['Copies sold']:
+for i in df['CopiesSold']:
   lst.append(i.split()[0])
-df['Copies sold'] = lst
-df['Copies sold'] = pd.to_numeric(df["Copies sold"])
-df["Release date[a]"] = pd.to_datetime(df["Release date[a]"])
+df['CopiesSold'] = lst
+df['CopiesSold'] = pd.to_numeric(df["CopiesSold"])
+df["ReleaseYear"] = pd.to_datetime(df["ReleaseYear"])
+df["ReleaseYear"] = df["ReleaseYear"].dt.year
 
 """## **Data Analysis**"""
 
-barplot = px.bar(df, "Game", "Copies sold")
+barplot = px.bar(df, "Game", "CopiesSold")
 barplot.show()
 
-df[df["Copies sold"] >= 15]
+df[df["CopiesSold"] >= 15]
 
-cercleplot = px.pie(df, "Genre(s)", "Copies sold")
+cercleplot = px.pie(df, "Genre(s)", "CopiesSold")
 cercleplot.show()
+
+"""# **Prediction**"""
+
+x = df[["ReleaseYear"]]
+y = df["CopiesSold"]
+model = LinearRegression()
+model.fit(x, y)
+
+
+years_to_predict = [[2021], [2022], [2023], [2024]]
+sales_predicted = model.predict(years_to_predict)
+
+plt.plot(df['ReleaseYear'], df['CopiesSold'], 'o')
+plt.plot(years_to_predict, sales_predicted, 'o')
+plt.xlabel('Year')
+plt.ylabel('Copies Sold')
+plt.title('Predicted Sales')
+plt.show()
